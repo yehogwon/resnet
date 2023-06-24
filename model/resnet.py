@@ -22,15 +22,35 @@ class Block(nn.Module):
         out = self.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
 
-        print('x: ', x.shape, ', out: ', out.shape)
         x = self._dim_change(x)
-        print('x: ', x.shape, ', out: ', out.shape)
         
         return self.relu(x + out)
 
-# TODO: Implement Bottleneck (this is not perfect yet)
 class Bottleneck(nn.Module): 
-    pass
+    def __init__(self, dim: int, dim_change: bool=False) -> None: # dim_change is True when this block is the first block of a stage
+        super().__init__()
+
+        scale = 2 if dim_change else 1
+        self.conv1 = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=scale, bias=False)
+        self.bn1 = nn.BatchNorm2d(num_features=dim)
+        self.conv2 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(num_features=dim)
+        self.conv3 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(num_features=dim)
+        
+        self.relu = nn.ReLU()
+        self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=2, bias=False) if dim_change else nn.Identity()
+
+        # TODO: Initialize weights
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor: 
+        out = self.relu(self.bn1(self.conv1(x)))
+        out = self.relu(self.bn2(self.conv2(out)))
+        out = self.bn3(self.conv3(out))
+
+        x = self._dim_change(x)
+        
+        return self.relu(x + out)
 
 # TODO: Implement ResNet module (this is not perfect yet)
 class ResNet(nn.Module): 

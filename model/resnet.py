@@ -35,11 +35,11 @@ class Bottleneck(nn.Module):
         self.bn1 = nn.BatchNorm2d(num_features=dim)
         self.conv2 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=3, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(num_features=dim)
-        self.conv3 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(num_features=dim)
+        self.conv3 = nn.Conv2d(in_channels=dim, out_channels=dim * 4, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(num_features=dim * 4)
         
         self.relu = nn.ReLU()
-        self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=2, bias=False) if dim_change else nn.Identity()
+        self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim * 4, kernel_size=1, stride=2, bias=False) if dim_change else nn.Identity()
 
         # TODO: Initialize weights
     

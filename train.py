@@ -64,9 +64,9 @@ def main(args):
     elif model_name == 'resnet34':
         model_ = resnet.resnet34()
     if torch.cuda.device_count() > 1:
-        model = ParallelWrapper(model).to(device)
+        model = ParallelWrapper(model_).to(device)
     else: 
-        model = model.to(device)
+        model = model_.to(device)
     
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     loss = nn.CrossEntropyLoss()

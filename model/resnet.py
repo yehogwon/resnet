@@ -75,7 +75,6 @@ class Bottleneck(nn.Module):
         
         return self.relu(x + out)
 
-# TODO: Implement ResNet module (this is not perfect yet)
 class ResNet(nn.Module): 
     def __init__(self, sizes: list[int], bottleneck: bool=True) -> None:
         super().__init__()
@@ -84,7 +83,7 @@ class ResNet(nn.Module):
         assert not bottleneck, 'bottleneck is not supported yet'
 
         self.sizes = sizes
-        # self.bottleneck = bottleneck
+        self.bottleneck = bottleneck
 
         # TODO: the value of paddings is not specified in the paper; it is set to match the output size shown in the paper
 
@@ -97,18 +96,18 @@ class ResNet(nn.Module):
         BlockClass = Block
 
         self.module_stack = [
-            nn.Sequential(*[BlockClass(dim=64, dim_change=False) for i in range(sizes[0])]), 
-            nn.Sequential(*[BlockClass(dim=128, dim_change=i==0) for i in range(sizes[1])]), 
-            nn.Sequential(*[BlockClass(dim=256, dim_change=i==0) for i in range(sizes[2])]),
-            nn.Sequential(*[BlockClass(dim=512, dim_change=i==0) for i in range(sizes[3])])
+            nn.Sequential(*[BlockClass(dim=64, sub=False) for i in range(sizes[0])]), 
+            nn.Sequential(*[BlockClass(dim=128, sub=i==0) for i in range(sizes[1])]), 
+            nn.Sequential(*[BlockClass(dim=256, sub=i==0) for i in range(sizes[2])]),
+            nn.Sequential(*[BlockClass(dim=512, sub=i==0) for i in range(sizes[3])])
         ]
 
         # self.module_stack = [
         #     nn.Sequential(*[BlockClass(dim=2 ** (i + 6), dim_change=i==0 and not (d == 0)) for i in range(sizes[d])])
         # for d in range(4)]
 
-        self.gap = nn.AdaptiveAvgPool2d(output_size=1000)
-        self.fc = nn.Linear(in_features=1000, out_features=10, bias=True)
+        self.gap = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+        self.fc = nn.Linear(in_features=512, out_features=1000, bias=True)
 
         # TODO: Initialize weights
 
@@ -119,6 +118,7 @@ class ResNet(nn.Module):
         out = self.module_stack[2](out)
         out = self.module_stack[3](out)
         out = self.gap(out)
+        out = self.fc(out.view(out.size(0), -1))
         return out
     
     def __repr__(self):

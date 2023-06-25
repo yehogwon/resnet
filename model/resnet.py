@@ -130,3 +130,9 @@ class ResNet(nn.Module):
     
     def __repr__(self):
         return f'ResNet-{sum(self.sizes) * (3 if self.bottleneck else 2) + 2}'
+
+def resnet18() -> ResNet:
+    return ResNet([2, 2, 2, 2])
+
+def resnet34() -> ResNet:
+    return ResNet([3, 4, 6, 3])

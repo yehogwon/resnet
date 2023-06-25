@@ -34,6 +34,7 @@ def train(model, train_data, test_data, optimizer, loss, epoch, device, ckpt_pat
             optimizer.step()
             total_loss += loss_.item()
             total_acc += (y_hat.argmax(dim=1) == y).sum().item()
+            wandb.log({'epoch': epoch_idx})
         wandb.log({'train/loss': total_loss / len(train_data), 'train/acc': total_acc / len(train_data)})
         test_loss, test_acc = evaluate(model, test_data, loss, device)
         wandb.log({'test/loss': test_loss, 'test/acc': test_acc})
@@ -75,7 +76,8 @@ def main(args):
         'batch_size': args.batch_size,
         'learning rate': args.lr,
         'momentum': args.momentum,
-        'weight_decay': args.weight_decay
+        'weight_decay': args.weight_decay, 
+        'device': device
     }
     
     wandb.init(project='resnet-demo', config=train_info)

@@ -82,7 +82,7 @@ class Bottleneck(nn.Module):
         return self.relu(x + out)
 
 class ResNet(nn.Module): 
-    def __init__(self, sizes: list[int], bottleneck: bool=True) -> None:
+    def __init__(self, sizes: list[int], bottleneck: bool=False) -> None:
         super().__init__()
         
         assert type(sizes) == list and len(sizes) == 4, 'sizes should be a list of 4 integers'

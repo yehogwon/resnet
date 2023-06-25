@@ -15,6 +15,11 @@ class Block(nn.Module):
         
         self.relu = nn.ReLU()
         self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=2, bias=True)
+        
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight)
+                m.bias.data.zero_()
     
     def shortcut(self, x: torch.Tensor, z: torch.Tensor) -> torch.Tensor:
         if x.shape != z.shape:
@@ -58,6 +63,11 @@ class Bottleneck(nn.Module):
         
         self.relu = nn.ReLU()
         self._dim_change = nn.Conv2d(in_channels=int(dim * scale), out_channels=dim * 4, kernel_size=1, stride=scale, bias=True)
+        
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight)
+                m.bias.data.zero_()
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         print('!!! forward !!!') 
@@ -102,6 +112,11 @@ class ResNet(nn.Module):
 
         self.gap = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         self.fc = nn.Linear(in_features=512, out_features=1000, bias=True)
+        
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight)
+                m.bias.data.zero_()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor: 
         out = self.relu(self.bn(self.pool(self.conv(x))))

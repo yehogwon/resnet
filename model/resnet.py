@@ -15,8 +15,6 @@ class Block(nn.Module):
         
         self.relu = nn.ReLU()
         self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=2, bias=False)
-
-        # TODO: Initialize weights
     
     def shortcut(self, x: torch.Tensor, z: torch.Tensor) -> torch.Tensor:
         if x.shape != z.shape:
@@ -60,8 +58,6 @@ class Bottleneck(nn.Module):
         
         self.relu = nn.ReLU()
         self._dim_change = nn.Conv2d(in_channels=int(dim * scale), out_channels=dim * 4, kernel_size=1, stride=scale, bias=False)
-
-        # TODO: Initialize weights
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         print('!!! forward !!!') 
@@ -85,8 +81,6 @@ class ResNet(nn.Module):
         self.sizes = sizes
         self.bottleneck = bottleneck
 
-        # TODO: the value of paddings is not specified in the paper; it is set to match the output size shown in the paper
-
         self.conv = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
         self.pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.bn = nn.BatchNorm2d(num_features=64)
@@ -108,8 +102,6 @@ class ResNet(nn.Module):
 
         self.gap = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         self.fc = nn.Linear(in_features=512, out_features=1000, bias=True)
-
-        # TODO: Initialize weights
 
     def forward(self, x: torch.Tensor) -> torch.Tensor: 
         out = self.relu(self.bn(self.pool(self.conv(x))))

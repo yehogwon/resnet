@@ -15,7 +15,7 @@ from tqdm import tqdm
 import datetime
 
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def train(model, train_data, test_data, optimizer, loss, epoch, device, ckpt_path):
     save_term = epoch // 100

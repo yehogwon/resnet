@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 def make_dataloader(path: str, mode: str, batch_size: int): 
     if mode == 'train': 
         dataset = CIFAR10(root=os.path.join(path, 'cifar10/train'), train=True, download=True, transform=transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
+            transforms.RandomCrop((224, 224)), 
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.49139968, 0.48215827, 0.44653124], std=[0.24703233, 0.24348505, 0.26158768])

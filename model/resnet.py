@@ -4,27 +4,31 @@ from torchsummary import summary
 
 
 class Block(nn.Module): 
-    def __init__(self, dim: int, dim_change: bool=False) -> None: # dim_change is True when this block is the first block of a stage
+    def __init__(self, dim: int, sub: bool) -> None: # dim_change is True when this block is the first block of a stage
         super().__init__()
 
-        scale = 2 if dim_change else 1
+        scale = 2 if sub else 1
         self.conv1 = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=3, stride=scale, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(num_features=dim)
         self.conv2 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(num_features=dim)
         
         self.relu = nn.ReLU()
-        self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=2, bias=False) if dim_change else nn.Identity()
+        self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=2, bias=False)
 
         # TODO: Initialize weights
     
-    def forward(self, x: torch.Tensor) -> torch.Tensor: 
+    def shortcut(self, x: torch.Tensor, z: torch.Tensor) -> torch.Tensor:
+        if x.shape != z.shape:
+            x = self._dim_change(x)
+        return x + z
+    
+    def forward(self, x: torch.Tensor, shortcut: bool=True) -> torch.Tensor: 
         out = self.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-
-        x = self._dim_change(x)
-        
-        return self.relu(x + out)
+        if shortcut: 
+            out = self.shortcut(x, out)
+        return self.relu(out)
 
 # FIXME: Bottleneck has tons of bugs, so not being used at the moment
 class Bottleneck(nn.Module): 

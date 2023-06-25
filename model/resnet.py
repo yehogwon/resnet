@@ -8,13 +8,13 @@ class Block(nn.Module):
         super().__init__()
 
         scale = 2 if sub else 1
-        self.conv1 = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=3, stride=scale, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=3, stride=scale, padding=1, bias=True)
         self.bn1 = nn.BatchNorm2d(num_features=dim)
-        self.conv2 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=3, stride=1, padding=1, bias=True)
         self.bn2 = nn.BatchNorm2d(num_features=dim)
         
         self.relu = nn.ReLU()
-        self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=2, bias=False)
+        self._dim_change = nn.Conv2d(in_channels=int(dim / scale), out_channels=dim, kernel_size=1, stride=2, bias=True)
     
     def shortcut(self, x: torch.Tensor, z: torch.Tensor) -> torch.Tensor:
         if x.shape != z.shape:
@@ -49,15 +49,15 @@ class Bottleneck(nn.Module):
         else:
             scale = 1
 
-        self.conv1 = nn.Conv2d(in_channels=int(dim * scale), out_channels=dim, kernel_size=1, stride=scale, bias=False)
+        self.conv1 = nn.Conv2d(in_channels=int(dim * scale), out_channels=dim, kernel_size=1, stride=scale, bias=True)
         self.bn1 = nn.BatchNorm2d(num_features=dim)
-        self.conv2 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=3, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(in_channels=dim, out_channels=dim, kernel_size=3, padding=1, bias=True)
         self.bn2 = nn.BatchNorm2d(num_features=dim)
-        self.conv3 = nn.Conv2d(in_channels=dim, out_channels=dim * 4, kernel_size=1, bias=False)
+        self.conv3 = nn.Conv2d(in_channels=dim, out_channels=dim * 4, kernel_size=1, bias=True)
         self.bn3 = nn.BatchNorm2d(num_features=dim * 4)
         
         self.relu = nn.ReLU()
-        self._dim_change = nn.Conv2d(in_channels=int(dim * scale), out_channels=dim * 4, kernel_size=1, stride=scale, bias=False)
+        self._dim_change = nn.Conv2d(in_channels=int(dim * scale), out_channels=dim * 4, kernel_size=1, stride=scale, bias=True)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         print('!!! forward !!!') 
@@ -81,7 +81,7 @@ class ResNet(nn.Module):
         self.sizes = sizes
         self.bottleneck = bottleneck
 
-        self.conv = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=True)
         self.pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.bn = nn.BatchNorm2d(num_features=64)
         self.relu = nn.ReLU()

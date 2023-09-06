@@ -3,15 +3,14 @@ from typing import Optional, Type, Union, List
 import torch
 import torch.nn as nn
 
-def conv3x3(in_channels: int, out_channels: int, stride: int=1, dilation: int=1) -> nn.Conv2d: 
+def conv3x3(in_channels: int, out_channels: int, stride: int=1, padding: int=1) -> nn.Conv2d: 
     return nn.Conv2d(
         in_channels, 
         out_channels, 
         kernel_size=3, 
         stride=stride, 
-        padding=dilation, 
-        bias=False, 
-        dilation=dilation
+        padding=padding, 
+        bias=False
     )
 
 def conv1x1(in_channels: int, out_channels: int, stride: int=1) -> nn.Conv2d:

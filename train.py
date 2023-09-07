@@ -34,7 +34,8 @@ class Trainer:
     def train(self, batch_size: int, n_epoch: int, lr: float, weight_decay: float, wandb_log: bool=True) -> None: 
         if wandb_log: 
             wandb.init(
-                project=f'{self.model}-{self.dataset_name}-{self.exp_name}', 
+                project='ResNet',
+                name=f'{self.model}-{self.dataset_name}-{self.exp_name}', 
                 config={
                     'dataset': self.dataset_name,
                     'device': self.device,

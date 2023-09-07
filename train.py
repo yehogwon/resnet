@@ -8,10 +8,14 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
+from torchvision import transforms
+
 import wandb
 from tqdm import tqdm
 
 from dataset.common import create_dataset, get_class_counts
+from utils.vision import *
+from resnet import ResNet, BasicBlock, Bottleneck
 
 class Trainer: 
     def __init__(self, exp_name: str, dataset: str, transform: Optional[Callable], model: nn.Module, ckpt_path: str, ckpt_interval: int, device: str='cpu') -> None:
@@ -122,7 +126,52 @@ class Trainer:
         return ckpt_saved # return the path to saved checkpoint
 
 def main(args: argparse.Namespace) -> None: 
-    pass
+    n_classes = get_class_counts(args.dataset)
+    if args.model == 'resnet18': 
+        model = ResNet(BasicBlock, [2, 2, 2, 2], n_classes=n_classes)
+    elif args.model == 'resnet34':
+        model = ResNet(BasicBlock, [3, 4, 6, 3], n_classes=n_classes)
+    elif args.model == 'resnet50':
+        model = ResNet(Bottleneck, [3, 4, 6, 3], n_classes=n_classes)
+    elif args.model == 'resnet101':
+        model = ResNet(Bottleneck, [3, 4, 23, 3], n_classes=n_classes)
+    elif args.model == 'resnet152':
+        model = ResNet(Bottleneck, [3, 8, 36, 3], n_classes=n_classes)
+    
+    # get dataset mean and std
+    if args.dataset == 'imagenet':
+        mean, std = imagenet_normalization_params()
+    elif args.dataset == 'cifar10':
+        mean, std = cifar10_normalization_params()
+    elif args.dataset == 'cifar100':
+        mean, std = cifar100_normalization_params()
+
+    if args.dataset == 'imagenet': 
+        transform = transforms.Compose([
+            transforms.Resize(256), #  In the original paper, the images are resized with their shortest side randomly sampled in [256, 480] for scale augmentation.
+            transforms.RandomCrop(244), 
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+    elif args.dataset in ['cifar10', 'cifar100']: 
+        transform = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std)
+        ])
+    
+    trainer = Trainer(
+        exp_name=args.exp_name,
+        dataset=args.dataset,
+        transform=transform,
+        model=model, 
+        ckpt_path=args.ckpt_path,
+        ckpt_interval=args.ckpt_interval,
+        device=args.device
+    )
+
 
 if __name__ == '__main__': 
     parser = argparse.ArgumentParser(description='Train a ResNet model on a variety of datasets.')

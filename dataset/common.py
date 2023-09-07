@@ -18,12 +18,12 @@ def create_dataset(name: str, root: str, split: str, transform: Optional[Callabl
     elif name == 'cifar100':
         return CIFAR100(root=root, train=split == 'train', transform=transform)
 
-def get_class_counts(dataset: Union[ImageNet, CIFAR10, CIFAR100]) -> int: 
-    if isinstance(dataset, ImageNet): 
+def get_class_counts(dataset: Union[str, ImageNet, CIFAR10, CIFAR100]) -> int: 
+    if isinstance(dataset, ImageNet) or dataset == 'imagenet': 
         return 1000
-    elif isinstance(dataset, CIFAR10): 
+    elif isinstance(dataset, CIFAR10) or dataset == 'cifar10': 
         return 10
-    elif isinstance(dataset, CIFAR100): 
+    elif isinstance(dataset, CIFAR100) or dataset == 'cifar100': 
         return 100
     else: 
         raise ValueError(f'Invalid dataset type: {type(dataset)}')

@@ -22,14 +22,15 @@ class Trainer:
         self.exp_name = exp_name
         self.dataset_name = dataset
         self.transform = transform
-        self.train_dataset = create_dataset(dataset, train=True, transform=transform)
-        self.test_dataset = create_dataset(dataset, train=False, transform=transform)
+        self.train_dataset = create_dataset(dataset, os.path.join('dataset', self.dataset_name), split='train', transform=transform)
+        self.val_dataset = create_dataset(dataset, os.path.join('dataset', self.dataset_name), split='val', transform=transform)
 
         self.model = model
         self.ckpt_path = ckpt_path
         self.ckpt_interval = ckpt_interval
         self.device = device
     
+    # TODO: learning rate scheduler
     def train(self, batch_size: int, n_epoch: int, lr: float, weight_decay: float, wandb_log: bool=True) -> None: 
         if wandb_log: 
             wandb.init(
@@ -99,7 +100,7 @@ class Trainer:
         return n_correct / len(self.train_dataset), sum(losses) / len(losses) # acc, loss_avg
 
     def validate(self, batch_size: int) -> Tuple[float, float]: 
-        test_loader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+        test_loader = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
         loss_fn = nn.CrossEntropyLoss()
         n_correct = 0
         losses = []
@@ -116,7 +117,7 @@ class Trainer:
 
                 del x, y, y_pred, loss
 
-        acc = n_correct / len(self.test_dataset)
+        acc = n_correct / len(self.val_dataset)
         loss_avg = sum(losses) / len(losses)
         return acc, loss_avg
 
@@ -172,6 +173,13 @@ def main(args: argparse.Namespace) -> None:
         device=args.device
     )
 
+    trainer.train(
+        batch_size=args.batch_size,
+        n_epoch=args.epochs,
+        lr=args.lr,
+        weight_decay=args.weight_decay,
+        wandb_log=args.wandb
+    )
 
 if __name__ == '__main__': 
     parser = argparse.ArgumentParser(description='Train a ResNet model on a variety of datasets.')
@@ -185,7 +193,6 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=128, help='Batch size to use for training.')
     parser.add_argument('--epochs', type=int, default=100, help='Number of epochs to train for.')
     parser.add_argument('--lr', type=float, default=0.1, help='Learning rate to use for training.')
-    parser.add_argument('--momentum', type=float, default=0.9, help='Momentum to use for training.')
     parser.add_argument('--weight-decay', type=float, default=1e-4, help='Weight decay to use for training.')
     
     parser.add_argument('--device', type=str, default='cpu', help='Device to use for training.')

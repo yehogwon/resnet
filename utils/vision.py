@@ -4,7 +4,22 @@ import torch
 from torch.utils.data import DataLoader
 import numpy as np
 
-def calculate_normalisation_params(train_loader: Optional[DataLoader], test_loader: Optional[DataLoader]) -> Tuple[List[float], List[float]]:
+__all__ = [
+    'imagenet_normalization_params',
+    'cifar10_normalization_params',
+    'cifar100_normalization_params'
+]
+
+def imagenet_normalization_params() -> Tuple[List[float], List[float]]: 
+    return [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
+
+def cifar10_normalization_params() -> Tuple[List[float], List[float]]:
+    return [0.4914, 0.4822, 0.4465], [0.2470, 0.2435, 0.2616]
+
+def cifar100_normalization_params() -> Tuple[List[float], List[float]]:
+    return [0.5071, 0.4867, 0.4408], [0.2675, 0.2565, 0.2761]
+
+def calculate_normalization_params(train_loader: Optional[DataLoader], test_loader: Optional[DataLoader]) -> Tuple[List[float], List[float]]:
     """
     Calculate the mean and standard deviation of each channel
     for all observations in training and test datasets. The

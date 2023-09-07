@@ -59,6 +59,9 @@ class Bottleneck(nn.Module):
 class ResNet(nn.Module): 
     def __init__(self, block: Type[Union[BasicBlock, Bottleneck]], n_blocks: List[int], n_classes: int) -> None:
         super().__init__()
+
+        _blocks_per_layer = 3 if block == Bottleneck else 2
+        self.name = f'ResNet{sum(n_blocks) * _blocks_per_layer + 2}'
         
         self.conv = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn = nn.BatchNorm2d(64)
@@ -93,3 +96,6 @@ class ResNet(nn.Module):
         z = self.gap(z)
         z = z.view(z.size(0), -1)
         return self.fc(z)
+
+    def __repr__(self):
+        return self.name

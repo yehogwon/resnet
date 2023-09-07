@@ -98,7 +98,7 @@ class Trainer:
             
             del x, y, y_pred, loss
         
-        return n_correct / len(self.train_dataset), sum(losses) / len(losses) # acc, loss_avg
+        return n_correct / len(dataloader.dataset), sum(losses) / len(losses) # acc, loss_avg
 
     def validate(self, batch_size: int) -> Tuple[float, float]: 
         test_loader = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)

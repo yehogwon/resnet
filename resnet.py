@@ -91,7 +91,6 @@ class ResNet(nn.Module):
 
         for layer in self.layers:
             z = layer(z)
-            print(z.shape)
 
         z = self.gap(z)
         z = z.view(z.size(0), -1)

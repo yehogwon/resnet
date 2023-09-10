@@ -73,11 +73,11 @@ class Trainer:
         loss_fn = nn.CrossEntropyLoss()
         optimizer = optim.AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay, betas=betas)
         
-        scheduler: Optional[optim.lr_scheduler.LRScheduler] = None
+        lr_scheduler: Optional[optim.lr_scheduler.LRScheduler] = None
         if scheduler == 'cosine':
-            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=scheduler_args['cosine']['T_max'], eta_min=scheduler_args['cosine']['eta_min'])
+            lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=scheduler_args['cosine']['T_max'], eta_min=scheduler_args['cosine']['eta_min'])
         elif scheduler == 'step':
-            scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_args['step']['step_size'], gamma=scheduler_args['step']['gamma'])
+            lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_args['step']['step_size'], gamma=scheduler_args['step']['gamma'])
 
         train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
@@ -106,7 +106,8 @@ class Trainer:
                 ckpt_path = self._save_model(f'{self.exp_name}_{epoch}.pth')
                 print(f'Checkpoint saved: {ckpt_path}')
             
-            scheduler.step()
+            if lr_scheduler is not None:
+                lr_scheduler.step()
     
     def _train_iteration(
             self, 

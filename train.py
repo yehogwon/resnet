@@ -18,7 +18,16 @@ from utils.vision import *
 from resnet import ResNet, BasicBlock, Bottleneck
 
 class Trainer: 
-    def __init__(self, exp_name: str, dataset: str, transform: Optional[Callable], model: nn.Module, ckpt_path: str, ckpt_interval: int, device: str='cpu') -> None:
+    def __init__(
+            self, 
+            exp_name: str, 
+            dataset: str, 
+            transform: Optional[Callable], 
+            model: nn.Module, 
+            ckpt_path: str, 
+            ckpt_interval: int, 
+            device: str='cpu'
+    ) -> None:
         self.exp_name = exp_name
         self.dataset_name = dataset
         self.transform = transform
@@ -31,7 +40,17 @@ class Trainer:
         self.device = device
     
     # TODO: learning rate scheduler
-    def train(self, batch_size: int, n_epoch: int, lr: float, weight_decay: float, wandb_log: bool=True) -> None: 
+    def train(
+            self, 
+            batch_size: int, 
+            n_epoch: int, 
+            lr: float, 
+            weight_decay: float, 
+            betas: Tuple[float, float], 
+            scheduler: Optional[str]=None,
+            scheduler_args: Optional[dict]=None,
+            wandb_log: bool=True
+    ) -> None: 
         if wandb_log: 
             wandb.init(
                 project='ResNet',
@@ -42,12 +61,19 @@ class Trainer:
                     'batch_size': batch_size,
                     'n_epoch': n_epoch,
                     'lr': lr,
-                    'weight_decay': weight_decay
+                    'weight_decay': weight_decay, 
+                    'betas': betas
                 }
             )
         
         loss_fn = nn.CrossEntropyLoss()
-        optimizer = optim.AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay)
+        optimizer = optim.AdamW(self.model.parameters(), lr=lr, weight_decay=weight_decay, betas=betas)
+        
+        scheduler: Optional[optim.lr_scheduler.LRScheduler] = None
+        if scheduler == 'cosine':
+            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=scheduler_args['cosine']['T_max'], eta_min=scheduler_args['cosine']['eta_min'])
+        elif scheduler == 'step':
+            scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_args['step']['step_size'], gamma=scheduler_args['step']['gamma'])
 
         train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
@@ -75,8 +101,17 @@ class Trainer:
             if epoch % self.ckpt_interval == 0:
                 ckpt_path = self._save_model(f'{self.exp_name}_{epoch}.pth')
                 print(f'Checkpoint saved: {ckpt_path}')
+            
+            scheduler.step()
     
-    def _train_iteration(self, dataloader: DataLoader, loss_fn: nn.Module, optimizer: optim.Optimizer, desc: str='Training', wandb_log: bool=True) -> Tuple[float, float]:
+    def _train_iteration(
+            self, 
+            dataloader: DataLoader, 
+            loss_fn: nn.Module, 
+            optimizer: optim.Optimizer, 
+            desc: str='Training', 
+            wandb_log: bool=True
+    ) -> Tuple[float, float]:
         losses = []
         n_correct = 0
         
@@ -100,7 +135,10 @@ class Trainer:
         
         return n_correct / len(dataloader.dataset), sum(losses) / len(losses) # acc, loss_avg
 
-    def validate(self, batch_size: int) -> Tuple[float, float]: 
+    def validate(
+            self, 
+            batch_size: int
+    ) -> Tuple[float, float]: 
         test_loader = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
         loss_fn = nn.CrossEntropyLoss()
         n_correct = 0
@@ -179,6 +217,18 @@ def main(args: argparse.Namespace) -> None:
         n_epoch=args.epochs,
         lr=args.lr,
         weight_decay=args.weight_decay,
+        betas=(args.beta1, args.beta2),
+        scheduler=args.lr_scheduler,
+        scheduler_args={
+            'cosine': {
+                'T_max': args.cosine_t_max,
+                'eta_min': args.cosine_eta_min
+            },
+            'step': {
+                'step_size': args.step_step_size,
+                'gamma': args.step_gamma
+            }
+        },
         wandb_log=args.wandb
     )
 
@@ -195,6 +245,17 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=100, help='Number of epochs to train for.')
     parser.add_argument('--lr', type=float, default=0.1, help='Learning rate to use for training.')
     parser.add_argument('--weight-decay', type=float, default=1e-4, help='Weight decay to use for training.')
+
+    parser.add_argument('--beta1', type=float, default=0.9, help='Beta1 for Adam optimizer (momentum).')
+    parser.add_argument('--beta2', type=float, default=0.999, help='Beta2 for Adam optimizer.')
+
+    parser.add_argument('--lr-scheduler', type=str, required=False, choices=['cosine', 'step'], help='Learning rate scheduler to use for training.')
+
+    parser.add_argument('--cosine-t-max', type=int, default=100, help='Period for cosine learning rate scheduler.')
+    parser.add_argument('--cosine-eta-min', type=float, default=0.0, help='Minimum learning rate for cosine learning rate scheduler.')
+
+    parser.add_argument('--step-step-size', type=int, default=30, help='Period for step learning rate scheduler to decay learning rate.')
+    parser.add_argument('--step-gamma', type=float, default=0.1, help='Multiplicative factor for step learning rate scheduler.')
     
     parser.add_argument('--device', type=str, default='cpu', help='Device to use for training.')
     parser.add_argument('--wandb', action='store_true', help='Whether to use wandb for logging.')

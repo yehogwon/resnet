@@ -62,7 +62,9 @@ class Trainer:
                     'n_epoch': n_epoch,
                     'lr': lr,
                     'weight_decay': weight_decay, 
-                    'betas': betas
+                    'betas': betas, 
+                    'lr_scheduler': scheduler,
+                    'lr_scheduler_args': scheduler_args
                 }
             )
         

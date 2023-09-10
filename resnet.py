@@ -85,7 +85,7 @@ class Bottleneck(nn.Module):
         z += self.shortcut(x) if self.shortcut is not None else x
         return self.relu(z)
 
-BlockType = Union[BasicBlock, Bottleneck]
+BlockType = Type[Union[BasicBlock, Bottleneck]]
 RESNET_IN_CHANNELS = 64
 RESNET_KERNEL_SIZE = 7
 
@@ -93,10 +93,13 @@ class ResNet(nn.Module):
     def __init__(self, block: BlockType, n_blocks: List[int], n_classes: int) -> None: 
         super().__init__()
 
+        assert len(n_blocks) == 4, 'The length of n_blocks must be 4'
+
         self.in_channels = RESNET_IN_CHANNELS
 
-        self.conv1 = nn.Conv2d(3, self.in_channels, kernel_size=RESNET_KERNEL_SIZE, stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(3, self.in_channels, kernel_size=RESNET_KERNEL_SIZE, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(self.in_channels)
+        self.max_pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layers1 = self._make_layer(block, 64, n_blocks[0], stride=1)
         self.layers2 = self._make_layer(block, 128, n_blocks[1], stride=2)
@@ -117,10 +120,13 @@ class ResNet(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor: 
         z = self.relu(self.bn1(self.conv1(x)))
+        z = self.max_pool(z)
+
         z = self.layers1(z)
         z = self.layers2(z)
         z = self.layers3(z)
         z = self.layers4(z)
+
         z = self.gap(z)
         z = z.view(z.shape[0], -1)
         return self.fc(z)

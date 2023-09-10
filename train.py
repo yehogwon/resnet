@@ -20,6 +20,7 @@ from resnet import ResNet, BasicBlock, Bottleneck
 class Trainer: 
     def __init__(
             self, 
+            project_name: str,
             exp_name: str, 
             dataset: str, 
             transform: Optional[Callable], 
@@ -28,6 +29,7 @@ class Trainer:
             ckpt_interval: int, 
             device: str='cpu'
     ) -> None:
+        self.project_name = project_name
         self.exp_name = exp_name
         self.dataset_name = dataset
         self.transform = transform
@@ -53,7 +55,7 @@ class Trainer:
     ) -> None: 
         if wandb_log: 
             wandb.init(
-                project='ResNet',
+                project=self.project_name,
                 name=f'{self.model}-{self.dataset_name}-{self.exp_name}', 
                 config={
                     'dataset': self.dataset_name,
@@ -205,6 +207,7 @@ def main(args: argparse.Namespace) -> None:
         ])
     
     trainer = Trainer(
+        project_name=args.project_name,
         exp_name=args.exp_name,
         dataset=args.dataset,
         transform=transform,
@@ -236,6 +239,7 @@ def main(args: argparse.Namespace) -> None:
 
 if __name__ == '__main__': 
     parser = argparse.ArgumentParser(description='Train a ResNet model on a variety of datasets.')
+    parser.add_argument('--project_name', type=str, default='ResNet', help='Name of the project.')
     parser.add_argument('--exp_name', type=str, required=True, help='Name of the experiment.')
 
     parser.add_argument('--dataset', type=str, required=True, choices=['imagenet', 'cifar10', 'cifar100'], help='Dataset to train on.')

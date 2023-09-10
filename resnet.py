@@ -94,6 +94,9 @@ class ResNet(nn.Module):
         super().__init__()
 
         assert len(n_blocks) == 4, 'The length of n_blocks must be 4'
+        
+        _convs_per_layer = 3 if block == Bottleneck else 2
+        self.name = f'resnet{sum(n_blocks) * _convs_per_layer + 2}'
 
         self.in_channels = RESNET_IN_CHANNELS
 
@@ -130,6 +133,9 @@ class ResNet(nn.Module):
         z = self.gap(z)
         z = z.view(z.shape[0], -1)
         return self.fc(z)
+
+    def __repr__(self):
+        return self.name
 
 ''' BasicBlock '''
 def resnet18(n_classes: int) -> ResNet:

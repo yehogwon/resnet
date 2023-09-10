@@ -112,6 +112,14 @@ class ResNet(nn.Module):
         self.gap = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, n_classes)
         self.relu = nn.ReLU()
+
+        for m in self.modules(): 
+            # Use the parameters of Linear as it is
+            if isinstance(m, nn.Conv2d): 
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+            elif isinstance(m, nn.BatchNorm2d): 
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
     
     def _make_layer(self, block: BlockType, channels: int, n_blocks: int, stride: int) -> nn.Sequential: 
         strides = [stride] + [1] * (n_blocks - 1)

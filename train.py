@@ -88,6 +88,7 @@ class Trainer:
 
             log_info = {
                 'epoch': epoch, 
+                'learning_rate': lr_scheduler.get_last_lr()[0] if lr_scheduler is not None else lr,
                 'train_loss': train_loss, 
                 'train_acc': train_acc
             }

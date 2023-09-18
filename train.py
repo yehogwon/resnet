@@ -254,8 +254,8 @@ if __name__ == '__main__':
     parser.add_argument('--ckpt-path', type=str, required=True, help='Path to save checkpoints.')
     parser.add_argument('--ckpt-interval', type=int, default=10, help='Interval to save checkpoints at.')
 
-    parser.add_argument('--pretrained_model', type=str, help='path to pretrained model')
-    parser.add_argument('--start_epoch', type=int, default=1, help='start epoch for training')
+    parser.add_argument('--pretrained-model', type=str, help='path to pretrained model')
+    parser.add_argument('--start-epoch', type=int, default=1, help='start epoch for training')
     
     parser.add_argument('--batch-size', type=int, default=128, help='Batch size to use for training.')
     parser.add_argument('--epochs', type=int, default=100, help='Number of epochs to train for.')

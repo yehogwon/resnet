@@ -76,11 +76,11 @@ class Trainer:
         
         lr_scheduler: Optional[optim.lr_scheduler.LRScheduler] = None
         if scheduler == 'cosine':
-            lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=scheduler_args['cosine']['T_max'], eta_min=scheduler_args['cosine']['eta_min'])
+            lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=scheduler_args['cosine']['T_max'], eta_min=scheduler_args['cosine']['eta_min'], last_epoch=start_epoch)
         elif scheduler == 'step':
             lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_args['step']['step_size'], gamma=scheduler_args['step']['gamma'], last_epoch=start_epoch)
 
-        train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, last_epoch=start_epoch)
+        train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
         self.model = self.model.to(self.device)
 

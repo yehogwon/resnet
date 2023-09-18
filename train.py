@@ -46,6 +46,7 @@ class Trainer:
             self, 
             batch_size: int, 
             n_epoch: int, 
+            start_epoch: int, 
             lr: float, 
             weight_decay: float, 
             betas: Tuple[float, float], 
@@ -183,6 +184,9 @@ def main(args: argparse.Namespace) -> None:
         model = ResNet(Bottleneck, [3, 4, 23, 3], n_classes=n_classes)
     elif args.model == 'resnet152':
         model = ResNet(Bottleneck, [3, 8, 36, 3], n_classes=n_classes)
+
+    if args.pretrained_model is not None:
+        model.load_state_dict(torch.load(args.pretrained_model))
     
     # get dataset mean and std
     if args.dataset == 'imagenet':
@@ -222,6 +226,7 @@ def main(args: argparse.Namespace) -> None:
     trainer.train(
         batch_size=args.batch_size,
         n_epoch=args.epochs,
+        start_epoch=args.start_epoch, 
         lr=args.lr,
         weight_decay=args.weight_decay,
         betas=(args.beta1, args.beta2),
@@ -248,6 +253,9 @@ if __name__ == '__main__':
     parser.add_argument('--model', type=str, required=True, choices=['resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'], help='Model to train, one of the following: resnet18, resnet34, resnet50, resnet101, resnet152.')
     parser.add_argument('--ckpt-path', type=str, required=True, help='Path to save checkpoints.')
     parser.add_argument('--ckpt-interval', type=int, default=10, help='Interval to save checkpoints at.')
+
+    parser.add_argument('--pretrained_model', type=str, help='path to pretrained model')
+    parser.add_argument('--start_epoch', type=int, default=1, help='start epoch for training')
     
     parser.add_argument('--batch-size', type=int, default=128, help='Batch size to use for training.')
     parser.add_argument('--epochs', type=int, default=100, help='Number of epochs to train for.')

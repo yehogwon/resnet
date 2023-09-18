@@ -84,7 +84,7 @@ class Trainer:
 
         self.model = self.model.to(self.device)
 
-        for epoch in range(start_epoch, n_epoch): 
+        for epoch in range(start_epoch, n_epoch + 1): 
             train_acc, train_loss = self._train_iteration(train_loader, loss_fn, optimizer, desc=f'Epoch {epoch}/{n_epoch}', wandb_log=wandb_log)
 
             log_info = {

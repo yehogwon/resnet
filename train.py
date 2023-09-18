@@ -78,13 +78,13 @@ class Trainer:
         if scheduler == 'cosine':
             lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=scheduler_args['cosine']['T_max'], eta_min=scheduler_args['cosine']['eta_min'])
         elif scheduler == 'step':
-            lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_args['step']['step_size'], gamma=scheduler_args['step']['gamma'])
+            lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=scheduler_args['step']['step_size'], gamma=scheduler_args['step']['gamma'], last_epoch=start_epoch)
 
-        train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+        train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, last_epoch=start_epoch)
 
         self.model = self.model.to(self.device)
 
-        for epoch in range(1, n_epoch): 
+        for epoch in range(start_epoch, n_epoch): 
             train_acc, train_loss = self._train_iteration(train_loader, loss_fn, optimizer, desc=f'Epoch {epoch}/{n_epoch}', wandb_log=wandb_log)
 
             log_info = {
